@@ -33,11 +33,11 @@ function Spectra:get(color, alpha)
 Colors can be retrieved by calling them using the <b>get</b> function.  The first argument is the name of color as a string.  The second, optional argument is the alpha value to be passed through.
 #### Example
 ```
---Blue without alpha channel
 love.graphics.setColor( spectra:get('blue') )
+--The color has been set to blue
 
---Blue with alpha channel
 love.graphics.setColor( spectra:get('blue', 128) )
+--The color has been set to blue with half opacity
 ```
 
 ### Edit
