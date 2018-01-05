@@ -27,8 +27,11 @@ spectra = Spectra(customerPalette)
 
 
 ### Get
-
-Colors can be retrieved by calling them using the GET function.  The first argument is the name of color as a string.  The second, optional argument is the alpha value to be passed through.
+```
+function Spectra:get(color, alpha)
+```
+Colors can be retrieved by calling them using the <b>get</b> function.  The first argument is the name of color as a string.  The second, optional argument is the alpha value to be passed through.
+#### Example
 ```
 --Blue without alpha channel
 love.graphics.setColor( spectra:get('blue') )
@@ -38,8 +41,12 @@ love.graphics.setColor( spectra:get('blue', 128) )
 ```
 
 ### Edit
+```
+function Spectra:edit(color, r,g,b)
+```
+Colors can be modified or created using the <b>edit</b> function.  The named color is passed as the first argument as a string.  The following three arguments are the respective RGB values for the edit.
 
-Colors can be modified or created using the EDIT function.  The named color is passed as the first argument as a string.  The following three arguments are the respective RGB values for the edit.
+#### Example
 ```
 --Create New Color
 spectra:edit('myColor', 255,255,255)
@@ -50,18 +57,24 @@ spectra:edit('gray', 100,100,100)
 Colors are stored in the palette as named strings as indices.  
 
 ### ColorCount
-
-The COLORCOUNT function can be used to return the total amount of stored colors in the palette.
+The <b>colorCount</b> function can be used to return the total amount of stored colors in the palette.
+#### Example
 ```
 numberOfColors = spectra:colorCount()
 ```
 
 ### Mix
-
-The MIX function combines two colors by a factor 0-1 as well as applying alpha and lighten/darken effects.
 ```
-Spectra:mix(color,alpha,shade, color2,factor)
+function Spectra:mix(color,alpha,shade, color2,factor)
 ```
-The first three arguments indicate initial color, alpha, and a shade value.  The shade value default is 255; increasing or decreasing this value brightens or darkens the color respectively.
+The MIX function combines two colors by a factor 0-1 as well as applying alpha and lighten/darken effects. The first three arguments indicate initial color, alpha, and a shade value.  The shade value default is 255; increasing or decreasing this value brightens or darkens the color respectively.
 
 The second color is optional, however it will combine with the first by a factor of 0-1 (A value of .5 means exactly halfway between the colors.)  
+#### Example
+```
+love.graphics.setColor( spectra:mix('lightblue',128,255) )
+--The color has been set to light blue with half opacity
+
+love.graphics.setColor ( spectra:mix('purple', 255, 300, 'green', .5) )
+--The color has been set to a purple/green mix with increased brightness (shade is 300)
+```
