@@ -31,9 +31,7 @@ local Spectra = {
 -------------------------------
 local push = table.insert
 local function clamp(low, n, high) return math.min(math.max(low, n), high) end
-local function dist(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
 function lerp(a,b,t) return (1-t)*a + t*b end
-function cerp(a,b,t) local f=(1-math.cos(t*math.pi))*.5 return a*(1-f)+b*f end
 local function querp(a,b,c,t)
    return   (1-t)^2 * a +
             (1-t)*2 * t * b +
