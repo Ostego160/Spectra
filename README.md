@@ -4,7 +4,7 @@ Spectra Color Manager for LOVE2D
 
 ## Description:
 
-The Spectra Color Manager for LOVE2D stores a palette, RGB clamp values, and color mixing functions.  It was created to store color values and to create a gradient effects, especially tile color values.
+The Spectra Color Manager for LOVE2D stores a palette, RGB clamp values, and color mixing functions.  It was created to store color values and to create a gradient effects, especially tiled grids and cooresponding color values.
 
 ## Usage:
 
@@ -48,11 +48,11 @@ Colors can be modified or created using the <b>edit</b> function.  The named col
 
 #### Example
 ```
---Create New Color
 spectra:edit('myColor', 255,255,255)
+--myColor has been added to the palette
 
---Edit Existing Color
 spectra:edit('gray', 100,100,100)
+--gray already exists so its RGB values are changed
 ```
 Colors are stored in the palette as named strings as indices.  
 
@@ -67,9 +67,9 @@ numberOfColors = spectra:colorCount()
 ```
 function Spectra:mix(color,alpha,shade, color2,factor)
 ```
-The MIX function combines two colors by a factor 0-1 as well as applying alpha and lighten/darken effects. The first three arguments indicate initial color, alpha, and a shade value.  The shade value default is 255; increasing or decreasing this value brightens or darkens the color respectively.
+The <b>mix</b> function combines two colors by a factor 0-1 as well as applying alpha and lighten/darken effects. The first three arguments indicate initial color, alpha, and a shade value.  The shade value default is 255; increasing or decreasing this value brightens or darkens the color respectively.  Note: A shade value of 0 is black however, a high shade value does not mean the color becomes white, it becomes brighter.
 
-The second color is optional, however it will combine with the first by a factor of 0-1 (A value of .5 means exactly halfway between the colors.)  
+The second color is optional, however it will combine with the first by a factor of 0-1 (A value of .5 means exactly halfway between the colors.)
 #### Example
 ```
 love.graphics.setColor( spectra:mix('lightblue',128,255) )
@@ -77,4 +77,31 @@ love.graphics.setColor( spectra:mix('lightblue',128,255) )
 
 love.graphics.setColor ( spectra:mix('purple', 255, 300, 'green', .5) )
 --The color has been set to a purple/green mix with increased brightness (shade is 300)
+```
+
+### Gradient
+```
+function Spectra:gradient(range, distance, colorTable)
+```
+The <b>gradient</b> function combines 2-4 colors based on a range and distance.  The colorTable argument accepts a table with named colors, as well as alpha and shade fields.
+#### Example
+```
+love.graphics.setColor( spectra:gradient(512, 256, {'aqua','blue','midnight','black'}))
+--The color has been set to midway between 'blue' and 'midnight' in the gradient
+
+love.graphics.setColor( spectra:gradient(256, 256, {'red','blue', alpha=128, shade=128}))
+--The color has been set to full 'blue' because the distance has reached the range.  The color is half opacity and half darkened.
+```
+
+### Clamp
+```
+function Spectra:clamp(minColor,minFactor, maxColor,maxFactor)
+```
+The clamp function modifies the Spectra object minimum and maximum RGB values.  Once a clamp has been set it affects the mix and gradient functions; get is not affected by clamp.  The minFactor and maxFactor are values between 0-1 and calling clamp with no arguments resets the min and max.
+#### Example
+```
+spectra:clamp('blue',.25, 'white', 1)
+--The minimum RGB values have been shifted toward 'blue' by 25% while the maximum remains unchanged (100% white is default)
+spectra:clamp()
+--The min and max limits have been reset (black and white)
 ```
