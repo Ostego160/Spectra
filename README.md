@@ -28,11 +28,14 @@ spectra = Spectra(customerPalette)
 
 ### Get
 
-Colors can be retrieved by calling them using the GET function.
+Colors can be retrieved by calling them using the GET function.  The first argument is the name of color as a string.  The second, optional argument is the alpha value to be passed through.
 ```
+--Blue without alpha channel
 love.graphics.setColor( spectra:get('blue') )
+
+--Blue with alpha channel
+love.graphics.setColor( spectra:get('blue', 128) )
 ```
-Colors are stored in the palette as named strings as indices.  
 
 ### Edit
 
@@ -55,4 +58,10 @@ numberOfColors = spectra:colorCount()
 
 ### Mix
 
-The MIX
+The MIX function combines two colors by a factor 0-1 as well as applying alpha and lighten/darken effects.
+```
+Spectra:mix(color,alpha,shade, color2,factor)
+```
+The first three arguments indicate initial color, alpha, and a shade value.  The shade value default is 255; increasing or decreasing this value brightens or darkens the color respectively.
+
+The second color is optional, however it will combine with the first by a factor of 0-1 (A value of .5 means exactly halfway between the colors.)  
