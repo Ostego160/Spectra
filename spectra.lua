@@ -1,7 +1,7 @@
 local Spectra = {
    _NAME          = 'Spectra Color Manager',
    _VERSION       = '1.0',
-   _DESCRIPTION   = 'Color Management and Mixing Tool',
+   _DESCRIPTION   = 'Color Management and Mixing Tool for LOVE2D',
    _LICENSE       = [[
    MIT License
 
@@ -29,16 +29,11 @@ local Spectra = {
 -------------------------------
 -- |||HELPERS|||
 -------------------------------
-local lg = love.graphics
-local pop, push = table.remove, table.insert
-
+local push = table.insert
 local function clamp(low, n, high) return math.min(math.max(low, n), high) end
 local function dist(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
-
 function lerp(a,b,t) return (1-t)*a + t*b end
-function lerp2(a,b,t) return a+(b-a)*t end
 function cerp(a,b,t) local f=(1-math.cos(t*math.pi))*.5 return a*(1-f)+b*f end
-
 local function querp(a,b,c,t)
    return   (1-t)^2 * a +
             (1-t)*2 * t * b +
@@ -132,7 +127,6 @@ local function loadPalette()
    palette['darkbrown'] =  {40,26,13}
    return palette
 end
-
 -------------------------------
 -- |||SPECTRA CLASS|||
 -------------------------------
@@ -143,19 +137,10 @@ setmetatable(Spectra, {
   end,
 })
 
-function Spectra.new(palette,filterPath)
+function Spectra.new(palette)
    local self = setmetatable({}, Spectra)
-   if palette == 'default' then
-      self.palette = loadPalette()
-   else
-      self.palette = {}
-   end
-   if filterPath then
-      self.filter = {}
-      loadImages(self.filter, filterPath)
-   else
-      self.filter = {}
-   end
+   self.palette = palette or loadPalette()
+
    self.rMin, self.gMin, self.bMin = 0,0,0
    self.rMax, self.gMax, self.bMax = 255,255,255
    return self
@@ -172,8 +157,8 @@ end
 -------------------------------
 -- GET - Return RGB value by name
 function Spectra:get(color, alpha)
-   assert(self.pallete[color], 'Spectra Error: Color Not Found')
-   return self.pallete[color][1],self.pallete[color][2],self.pallete[color][3],alpha
+   assert(self.palette[color], 'Spectra Error: Color Not Found')
+   return self.palette[color][1],self.palette[color][2],self.palette[color][3],alpha
 end
 -------------------------------
 -- EDIT - Add or change color in palette
@@ -183,7 +168,7 @@ end
 -------------------------------
 -- MIX - Apply shade/fade to color and filter by color (by factor 0-1)
 function Spectra:mix(color,alpha,shade, color2,factor)
-   if shade>0 then s=clamp(0,(255-shade)/255,1) else s=1 end
+   if shade then s=math.max(0,shade/255) else s=1 end
    local r1,g1,b1 = self:get(color)
    if not color2 then
       return   clamp(self.rMin,r1*s,self.rMax),
@@ -193,41 +178,45 @@ function Spectra:mix(color,alpha,shade, color2,factor)
    else
       local r2,g2,b2 = self:get(color2)
       local t = clamp(0,factor,1)
-      local r = lerp(r1,r2,t)
-      local g = lerp(g1,g2,t)
-      local b = lerp(b1,b2,t)
-      return   clamp(self.rMin, r*s, self.rMax),
-               clamp(self.gMin, g*s, self.gMax),
-               clamp(self.bMin, b*s, self.bMax),
+      return   clamp(self.rMin, lerp(r1,r2,t)*s, self.rMax),
+               clamp(self.gMin, lerp(g1,g2,t)*s, self.gMax),
+               clamp(self.bMin, lerp(b1,b2,t)*s, self.bMax),
                clamp(0,alpha,255)
    end
 end
 -------------------------------
 -- GRADIENT - Mix 2-4 colors based on distance / range
-function Spectra:gradient(alpha, range, distance, ...)
-   local c,t = {}, clamp(0,distance/range,1)
-
-   for k,color in ipairs(arg) do
-      assert(k>4, 'Spectra Error: Color Limit Exceeded')
-      push(c, self:get(color))
+function Spectra:gradient(range, distance, colorTable)
+   local size = 0
+   local c,a,t,s = {}, colorTable['alpha'] or 255, clamp(0,distance/range,1),1
+   if colorTable['shade'] then s=clamp(0,(255-colorTable['shade'])/255,1) end
+   for _,color in pairs(colorTable) do
+      if type(color) == 'string' then
+         push(c, {self:get(color)})
+         size = size+1
+      end
    end
-   return #arg == 2 and clamp(self.rMin, lerp(c[1][1],c[2][1],t), self.rMax),
-                        clamp(self.rMin, lerp(c[1][2],c[2][2],t), self.rMax),
-                        clamp(self.rMin, lerp(c[1][3],c[2][3],t), self.rMax),
-                        clamp(0,alpha,255) or
-          #arg == 3 and clamp(self.rMin, querp(c[1][1],c[2][1],c[3][1],t), self.rMax),
-                        clamp(self.rMin, querp(c[1][2],c[2][2],c[3][2],t), self.rMax),
-                        clamp(self.rMin, querp(c[1][3],c[2][3],c[3][3],t), self.rMax),
-                        clamp(0,alpha,255) or
-          #arg == 4 and clamp(self.rMin, cuberp(c[1][1],c[2][1],c[3][1],c[4][1],t), self.rMax),
-                        clamp(self.rMin, cuberp(c[1][2],c[2][2],c[3][2],c[4][2],t), self.rMax),
-                        clamp(self.rMin, cuberp(c[1][3],c[2][3],c[3][3],c[4][3],t), self.rMax),
-                        clamp(0,alpha,255)
+   if size == 2 then return
+      clamp(self.rMin, lerp(c[1][1]*s,c[2][1]*s,t), self.rMax),
+      clamp(self.gMin, lerp(c[1][2]*s,c[2][2]*s,t), self.gMax),
+      clamp(self.bMin, lerp(c[1][3]*s,c[2][3]*s,t), self.bMax),
+      clamp(0,a,255)
+   elseif size == 3 then return
+      clamp(self.rMin, querp(c[1][1]*s,c[2][1]*s,c[3][1]*s,t), self.rMax),
+      clamp(self.gMin, querp(c[1][2]*s,c[2][2]*s,c[3][2]*s,t), self.gMax),
+      clamp(self.bMin, querp(c[1][3]*s,c[2][3]*s,c[3][3]*s,t), self.bMax),
+      clamp(0,a,255)
+   elseif size == 4 then return
+      clamp(self.rMin, cuberp(c[1][1]*s,c[2][1]*s,c[3][1]*s,c[4][1]*s,t), self.rMax),
+      clamp(self.gMin, cuberp(c[1][2]*s,c[2][2]*s,c[3][2]*s,c[4][2]*s,t), self.gMax),
+      clamp(self.bMin, cuberp(c[1][3]*s,c[2][3]*s,c[3][3]*s,c[4][3]*s,t), self.bMax),
+      clamp(0,a,255)
+   end
 end
 -------------------------------
--- CLAMP - Set Spectra min and max RGB values based on color (by factor 0-1)
+-- CLAMP - Set min and max RGB values based on color (by factor 0-1)
 function Spectra:clamp(minColor,minFactor, maxColor,maxFactor)
-   if minColor == 'reset' then
+   if not minColor then
       self.rMin, self.gMin, self.bMin = 0,0,0
       self.rMax, self.gMax, self.bMax = 255,255,255
    else
@@ -244,34 +233,6 @@ function Spectra:clamp(minColor,minFactor, maxColor,maxFactor)
       self.gMax = math.floor(lerp(255,g2,t2))
       self.bMax = math.floor(lerp(255,b2,t2))
    end
-end
--------------------------------
--- SAMPLE - Draws current palette to current screen resolution
-function Spectra:sample()
-   table.sort(self.palette)
-   local limit = 0
-   for k,v in pairs(self.palette) do limit = limit+1 end
-   limit = math.ceil(math.sqrt(limit))-1
-
-   local row,col = 0,0
-   local width,height = lg.getWidth()/limit,lg.getHeight()/limit
-   for c,rgb in pairs(self.palette) do
-      local r,g,b = self:get(c)
-      if row < limit then
-         lg.setColor(r,g,b)
-         lg.rectangle('fill',width*row,height*col,width,height)
-         lg.setColor(0,0,0)
-         lg.print(c,width*row,height*col)
-         for index,value in ipairs(rgb) do
-            lg.print(value,width*row,height*col+16*index)
-         end
-         row = row+1
-      else
-         row = 0
-         col = col+1
-      end
-   end
-   lg.setColor(255,255,255)
 end
 -------------------------------
 return Spectra
