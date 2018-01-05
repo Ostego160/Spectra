@@ -76,7 +76,7 @@ love.graphics.setColor( spectra:mix('lightblue',128,255) )
 --The color has been set to light blue with half opacity
 
 love.graphics.setColor ( spectra:mix('purple', 255, 300, 'green', .5) )
---The color has been set to a purple/green mix with increased brightness (shade is 300)
+--The color has been set to a purple/green mix with increased brightness
 ```
 
 ### Gradient
@@ -90,7 +90,8 @@ love.graphics.setColor( spectra:gradient(512, 256, {'aqua','blue','midnight','bl
 --The color has been set to midway between 'blue' and 'midnight' in the gradient
 
 love.graphics.setColor( spectra:gradient(256, 256, {'red','blue', alpha=128, shade=128}))
---The color has been set to full 'blue' because the distance has reached the range.  The color is half opacity and half darkened.
+--The color has been set to full 'blue' because the distance has reached the range.  
+--The color is half opacity and half darkened.
 ```
 
 ### Clamp
@@ -101,7 +102,8 @@ The clamp function modifies the Spectra object minimum and maximum RGB values.  
 #### Example
 ```
 spectra:clamp('blue',.25, 'white', 1)
---The minimum RGB values have been shifted toward 'blue' by 25% while the maximum remains unchanged (100% white is default)
+--The minimum RGB values have been shifted toward 'blue' by 25% while the 
+--maximum remains unchanged (100% white is default)
 spectra:clamp()
 --The min and max limits have been reset (black and white)
 ```
